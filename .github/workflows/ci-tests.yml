@@ -15,11 +15,11 @@ jobs:
         strategy:
             matrix:
                 py:
-                    - "3.7"
                     - "3.8"
                     - "3.9"
                     - "3.10"
                     - "3.11"
+                    - "3.12"
                     - "pypy-3.8"
                 os:
                     - "ubuntu-20.04"
@@ -47,9 +47,9 @@ jobs:
         name: "Python: ${{ matrix.py }}-${{ matrix.architecture }} on ${{ matrix.os }}"
         runs-on: ${{ matrix.os }}
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - name: Setup python
-              uses: actions/setup-python@v4
+              uses: actions/setup-python@v5
               with:
                   python-version: ${{ matrix.py }}
                   architecture: ${{ matrix.architecture }}
@@ -60,21 +60,21 @@ jobs:
         runs-on: ubuntu-20.04
         name: Validate coverage
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - name: Setup python
-              uses: actions/setup-python@v4
+              uses: actions/setup-python@v5
               with:
-                  python-version: 3.8
+                  python-version: 3.12
                   architecture: x64
             - run: pip install tox
-            - run: tox -e py38-cover,coverage
+            - run: tox -e py312-cover,coverage
     docs:
         runs-on: ubuntu-20.04
         name: Build the documentation
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - name: Setup python
-              uses: actions/setup-python@v4
+              uses: actions/setup-python@v5
               with:
                   python-version: 3.8
                   architecture: x64
@@ -84,9 +84,9 @@ jobs:
         runs-on: ubuntu-20.04
         name: Lint the package
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - name: Setup python
-              uses: actions/setup-python@v4
+              uses: actions/setup-python@v5
               with:
                   python-version: 3.8
                   architecture: x64

@@ -4,6 +4,7 @@ import mimetypes
 import os
 from os.path import exists, getmtime, getsize, isdir, join, normcase, normpath
 from pkg_resources import resource_exists, resource_filename, resource_isdir
+import warnings
 
 from pyramid.asset import abspath_from_asset_spec, resolve_asset_spec
 from pyramid.httpexceptions import HTTPMovedPermanently, HTTPNotFound
@@ -92,6 +93,19 @@ class static_view:
         if package_name is None:
             package_name = caller_package().__name__
         package_name, docroot = resolve_asset_spec(root_dir, package_name)
+        if package_name:
+            try:
+                __import__(package_name)
+            except ImportError:
+                warnings.warn(
+                    f'A "pyramid.static.static_view" is being created with an'
+                    f' asset spec referencing a package "{package_name}" that'
+                    f' does not exist. This will break in the future.'
+                    f' If this is done to override an asset, you must adjust'
+                    f' this to override a location inside a real package.',
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
         self.use_subpath = use_subpath
         self.package_name = package_name
         self.docroot = docroot
@@ -260,12 +274,12 @@ def _add_vary(response, option):
     response.vary = vary
 
 
-_seps = {'/', os.sep}
+_invalid_element_chars = {'/', os.sep, '\x00'}
 
 
-def _contains_slash(item):
-    for sep in _seps:
-        if sep in item:
+def _contains_invalid_element_char(item):
+    for invalid_element_char in _invalid_element_chars:
+        if invalid_element_char in item:
             return True
 
 
@@ -279,7 +293,7 @@ def _secure_path(path_tuple):
         # unless someone screws up the traversal_path code
         # (request.subpath is computed via traversal_path too)
         return None
-    if any([_contains_slash(item) for item in path_tuple]):
+    if any([_contains_invalid_element_char(item) for item in path_tuple]):
         return None
     encoded = '/'.join(path_tuple)  # will be unicode
     return encoded

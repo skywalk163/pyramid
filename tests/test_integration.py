@@ -213,7 +213,13 @@ class TestEventOnlySubscribers(IntegrationBase, unittest.TestCase):
         res = self.testapp.get('/sendfoobar', status=200)
         self.assertEqual(
             sorted(res.body.split()),
-            [b'foobar', b'foobar2', b'foobaryup', b'foobaryup2'],
+            [
+                b'foobar',
+                b'foobar2',
+                b'foobaryup',
+                b'foobaryup2',
+                b'foobaryup3',
+            ],
         )
 
 
@@ -223,6 +229,26 @@ class TestStaticAppUsingAbsPath(StaticAppBase, unittest.TestCase):
 
 class TestStaticAppUsingAssetSpec(StaticAppBase, unittest.TestCase):
     package = 'tests.pkgs.static_assetspec'
+
+
+class TestStaticAppUsingAbsPathNulByte(IntegrationBase, unittest.TestCase):
+    package = 'tests.pkgs.static_abspath_nulbyte'
+
+    def test_nulbyte_chroot(self):
+        super_w_null = '..\x00/'
+        self.testapp.get(f'/{super_w_null}', status=404)
+
+
+class TestStaticAppUsingAssetSpecNulByte(IntegrationBase, unittest.TestCase):
+    package = 'tests.pkgs.static_assetspec_nulbyte'
+
+    def test_nulbyte_chroot(self):
+        super_w_null = '..\x00/'
+        self.testapp.get(f'/{super_w_null}', status=404)
+
+    def test_nulbyte_chroot_assetspec_override(self):
+        super_w_null = '..\x00/'
+        self.testapp.get(f'/sub/{super_w_null}', status=404)
 
 
 class TestStaticAppWithEncodings(IntegrationBase, unittest.TestCase):
